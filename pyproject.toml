@@ -1,7 +1,7 @@
 [project]
 name = "doc-to-abstract"
 version = "0.1.0"
-description = "Generate academic abstracts from presentation slides using Claude"
+description = "Generate academic abstracts from your research materials using Claude"
 requires-python = ">=3.11"
 dependencies = [
     "click>=8.1.0",

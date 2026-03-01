@@ -1,13 +1,13 @@
 # doc-to-abstract
 
-Generate academic abstracts from presentation materials using Claude Code.
+Generate academic abstracts from your research materials using Claude Code.
 
-A CLI + Web UI tool for researchers to quickly generate conference/workshop/research meeting abstracts from their presentation slides and documents.
+A CLI + Web UI tool for researchers to quickly generate conference/workshop/research meeting abstracts from various materials (manuscripts, slides, notes, etc.).
 
 ## How It Works
 
 ```
-slides/docs (.pdf/.pptx) + refs + supplementary ──> [text extraction] ──> [Claude Code] ──> abstract.tex
+materials (.pdf/.pptx) + refs + supplementary ──> [text extraction] ──> [Claude Code] ──> abstract.tex
 ```
 
 1. Text is extracted from your materials (PDF via PyMuPDF, PPTX via python-pptx)
@@ -62,7 +62,7 @@ uv run doc-to-abstract serve
 
 Open http://localhost:7860 in your browser. The UI has 3 tabs:
 
-1. **Materials** - Upload slides, documents, references, supplementary materials, and templates (.pdf / .pptx)
+1. **Materials** - Upload main materials, references, supplementary materials, and templates (.pdf / .pptx)
 2. **Paper Info** - Enter title, authors, language, tone, and word limit
 3. **Annotations & Generate** - Set importance/comments per file, add extra instructions, and generate
 
@@ -113,7 +113,7 @@ All settings are defined in `doc-to-abstract.yaml`.
 
 | Field | Description |
 |-------|-------------|
-| `title` | Title of your presentation/paper |
+| `title` | Title of your paper |
 | `authors` | List of authors, each with `name` and `affiliation` (and optional `email`) |
 | `slides` | Path(s) to main materials (.pdf / .pptx). Can be a single string or a list. Legacy `slides_pdf` is also supported |
 

@@ -400,7 +400,7 @@ def create_app() -> gr.Blocks:
     init = _load_initial_config()
 
     with gr.Blocks(title="doc-to-abstract") as app:
-        gr.Markdown("# doc-to-abstract\nGenerate academic abstracts from presentation slides using Claude Code.")
+        gr.Markdown("# doc-to-abstract\nGenerate academic abstracts from your research materials using Claude Code.")
 
         with gr.Row():
             with gr.Column(scale=1):

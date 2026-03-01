@@ -23,7 +23,7 @@ EXAMPLE_YAML = Path(__file__).resolve().parent.parent / "doc-to-abstract.example
 @click.group()
 @click.version_option(version=__version__)
 def cli() -> None:
-    """Generate academic abstracts from presentation slides using Claude Code."""
+    """Generate academic abstracts from your research materials using Claude Code."""
 
 
 @cli.command()

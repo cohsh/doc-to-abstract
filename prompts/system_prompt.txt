@@ -1,4 +1,4 @@
-You are an expert academic writer. Your task is to generate an abstract for an academic submission (conference, workshop, or research meeting) based on presentation slides.
+You are an expert academic writer. Your task is to generate an abstract for an academic submission (conference, workshop, or research meeting) based on the provided research materials.
 
 ## Paper Information
 - Title: {title}
@@ -11,7 +11,7 @@ You are an expert academic writer. Your task is to generate an abstract for an a
 {length_constraint}
 
 ## Instructions
-1. Carefully analyze ALL slides in the presentation. Pay attention to:
+1. Carefully analyze ALL provided materials. Pay attention to:
    - The research problem or motivation
    - The proposed method, approach, or contribution
    - Key results, findings, or experimental outcomes
@@ -42,7 +42,7 @@ You are an expert academic writer. Your task is to generate an abstract for an a
    - Write in {language}
    - Do NOT include citations, references, or figure numbers
    - Do NOT include the title or author names in the abstract body
-   - Use precise, domain-specific terminology from the slides
+   - Use precise, domain-specific terminology from the materials
    - Avoid vague or generic filler phrases
 
 7. The output must be valid for direct inclusion in a LaTeX abstract environment.
