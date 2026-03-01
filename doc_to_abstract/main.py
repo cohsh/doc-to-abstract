@@ -124,5 +124,15 @@ def init() -> None:
     console.print("  [cyan]doc-to-abstract generate[/cyan]")
 
 
+@cli.command()
+@click.option("--port", type=int, default=7860, help="Port number")
+def serve(port: int) -> None:
+    """Launch the Web UI."""
+    from doc_to_abstract.server import launch
+
+    console.print(f"[bold blue]Starting Web UI on port {port}...[/bold blue]")
+    launch(port=port)
+
+
 if __name__ == "__main__":
     cli()

@@ -54,6 +54,16 @@ uv sync
 
 ## Quick Start
 
+### Web UI
+
+```bash
+uv run doc-to-abstract serve
+```
+
+Open http://localhost:7860 in your browser. Upload your slides PDF, fill in the fields, and click "Generate Abstract".
+
+### CLI
+
 1. Create a configuration file:
 
 ```bash
@@ -150,6 +160,10 @@ uv run doc-to-abstract generate --template conference-template.tex
 
 # Output only the \begin{abstract}...\end{abstract} block
 uv run doc-to-abstract generate --body-only
+
+# Launch Web UI
+uv run doc-to-abstract serve
+uv run doc-to-abstract serve --port 8080
 
 # Show version
 uv run doc-to-abstract --version
