@@ -10,9 +10,14 @@ A CLI + Web UI tool for researchers to quickly generate conference/workshop/rese
 
 ## Screenshots
 
-| Materials | Paper Info | Generate & Revise |
-|:-:|:-:|:-:|
-| ![Materials](docs/images/tab-materials.png) | ![Paper Info](docs/images/tab-paper-info.png) | ![Generate](docs/images/tab-generate.png) |
+**Materials**
+![Materials](docs/images/tab-materials.png)
+
+**Paper Info**
+![Paper Info](docs/images/tab-paper-info.png)
+
+**Generate & Revise**
+![Generate](docs/images/tab-generate.png)
 
 ## How It Works
 
