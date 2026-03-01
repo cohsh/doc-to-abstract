@@ -95,7 +95,6 @@ authors:
 slides:
   - "slides.pdf"
 language: "English"
-max_words: 300
 ```
 
 3. Generate the abstract:

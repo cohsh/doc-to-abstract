@@ -25,8 +25,8 @@ language: "English"
 # Options: formal, semi-formal, casual
 tone: "formal"
 
-# Optional: Length constraints (specify one or neither)
-max_words: 300
+# Optional: Length constraints (specify one or neither, default: no limit)
+# max_words: 300
 # max_characters: 1500
 
 # Optional: Reference papers for context and style

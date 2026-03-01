@@ -187,7 +187,7 @@ def _load_config(config_file: str | None):
     # Language, tone, max_words
     language = data.get("language", "English")
     tone = data.get("tone", "formal")
-    max_words = data.get("max_words", 300) or 0
+    max_words = data.get("max_words", 0) or 0
 
     # Extra instructions
     raw_extra = data.get("extra_instructions", [])
@@ -374,7 +374,7 @@ def _load_initial_config() -> dict:
         "authors": "",
         "language": "English",
         "tone": "formal",
-        "max_words": 300,
+        "max_words": 0,
         "annotations": [],
         "extra_instructions": "",
         "body_only": False,
