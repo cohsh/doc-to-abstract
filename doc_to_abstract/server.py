@@ -150,7 +150,6 @@ def create_app() -> gr.Blocks:
                 abstract_output = gr.Textbox(
                     label="Generated Abstract",
                     lines=12,
-                    show_copy_button=True,
                 )
                 file_output = gr.File(label="Download output file")
 
