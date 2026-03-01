@@ -396,6 +396,7 @@ def create_app() -> gr.Blocks:
                             file_types=[".tex", ".docx", ".pdf"],
                             type="filepath",
                         )
+                        save_btn_1 = gr.Button("Save config", variant="secondary", size="sm")
 
                     # Tab 2: Paper Info
                     with gr.Tab("2. Paper Info"):
@@ -424,14 +425,13 @@ def create_app() -> gr.Blocks:
                                 value=300,
                                 precision=0,
                             )
+                        save_btn_2 = gr.Button("Save config", variant="secondary", size="sm")
                         gr.Markdown("---")
-                        with gr.Row():
-                            save_btn = gr.Button("Save config", variant="secondary", size="sm")
-                            load_input = gr.File(
-                                label="Load config (.yaml)",
-                                file_types=[".yaml", ".yml"],
-                                type="filepath",
-                            )
+                        load_input = gr.File(
+                            label="Load config (.yaml)",
+                            file_types=[".yaml", ".yml"],
+                            type="filepath",
+                        )
                         config_download = gr.File(label="Saved config file", visible=False)
 
                     # Tab 3: Annotations & Generate
@@ -460,6 +460,7 @@ def create_app() -> gr.Blocks:
                             label="Body only (no full LaTeX document)",
                             value=False,
                         )
+                        save_btn_3 = gr.Button("Save config", variant="secondary", size="sm")
                         generate_btn = gr.Button("Generate Abstract", variant="primary")
 
             with gr.Column(scale=1):
@@ -484,49 +485,38 @@ def create_app() -> gr.Blocks:
                 outputs=[annotation_table],
             )
 
-        # Generate
+        # Generate (auto-save before generating)
+        save_inputs = [
+            slides_input,
+            reference_input,
+            supplementary_input,
+            template_input,
+            title_input,
+            authors_input,
+            language_input,
+            tone_input,
+            max_words_input,
+            annotation_table,
+            extra_input,
+            body_only_input,
+        ]
         generate_btn.click(
+            fn=_save_config,
+            inputs=save_inputs,
+            outputs=[config_download],
+        ).then(
             fn=_run,
-            inputs=[
-                slides_input,
-                reference_input,
-                supplementary_input,
-                template_input,
-                title_input,
-                authors_input,
-                language_input,
-                tone_input,
-                max_words_input,
-                annotation_table,
-                extra_input,
-                body_only_input,
-            ],
+            inputs=save_inputs,
             outputs=[abstract_output, file_output],
         )
 
-        # Save config
-        save_btn.click(
-            fn=_save_config,
-            inputs=[
-                slides_input,
-                reference_input,
-                supplementary_input,
-                template_input,
-                title_input,
-                authors_input,
-                language_input,
-                tone_input,
-                max_words_input,
-                annotation_table,
-                extra_input,
-                body_only_input,
-            ],
-            outputs=[config_download],
-        ).then(
-            fn=lambda f: gr.update(visible=True) if f else gr.update(),
-            inputs=[config_download],
-            outputs=[config_download],
-        )
+        # Save config (all tabs)
+        for btn in [save_btn_1, save_btn_2, save_btn_3]:
+            btn.click(
+                fn=_save_config,
+                inputs=save_inputs,
+                outputs=[config_download],
+            )
 
         # Load config
         load_input.change(
