@@ -12,8 +12,11 @@ authors:
   - name: "Bob Sample"
     affiliation: "Example Institute"
 
-# Required: Path to your presentation slides PDF
-slides_pdf: "slides.pdf"
+# Required: Path(s) to your presentation slides PDF(s)
+slides:
+  - "slides.pdf"
+# For a single file, you can also use: slides: "slides.pdf"
+# Legacy key 'slides_pdf' is also supported for backward compatibility.
 
 # Optional: Language for the abstract (default: English)
 language: "English"
@@ -31,6 +34,11 @@ max_words: 300
 #   - "refs/paper1.pdf"
 #   - "refs/paper2.pdf"
 
+# Optional: Supplementary materials (e.g., call for papers, workshop description)
+# supplementary:
+#   - "cfp.pdf"
+#   - "workshop-description.pdf"
+
 # Optional: Conference/workshop template file (.tex, .docx, or .pdf)
 # The template content is used to understand format requirements and guidelines.
 # For .tex and .docx templates, the abstract is also written directly into a copy.
@@ -39,5 +47,8 @@ max_words: 300
 # Optional: Output file path (default: abstract.tex)
 output: "abstract.tex"
 
-# Optional: Additional instructions for the LLM
-# extra_instructions: "Focus on the numerical results in slides 5-8."
+# Optional: Additional instructions for the LLM (list of strings)
+# extra_instructions:
+#   - "Focus on the numerical results in slides 5-8."
+#   - "Emphasize the novelty of the proposed method."
+# A single string is also supported: extra_instructions: "Focus on results."

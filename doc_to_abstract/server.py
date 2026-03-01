@@ -13,7 +13,7 @@ from doc_to_abstract.template import fill_template, read_template
 
 
 def _run(
-    slides_pdf: str | None,
+    slides_files: list[str] | None,
     title: str,
     authors_text: str,
     language: str,
@@ -21,12 +21,16 @@ def _run(
     max_words: int,
     template_file: str | None,
     reference_files: list[str] | None,
+    supplementary_files: list[str] | None,
     extra_instructions: str,
     body_only: bool,
 ) -> tuple[str, str | None]:
     """Generate abstract and return (abstract_text, output_file_path)."""
-    if not slides_pdf:
-        raise gr.Error("Slides PDF is required.")
+    if not slides_files:
+        raise gr.Error("At least one Slides PDF is required.")
+    slides = [f for f in slides_files if f]
+    if not slides:
+        raise gr.Error("At least one Slides PDF is required.")
     if not title.strip():
         raise gr.Error("Title is required.")
     if not authors_text.strip():
@@ -50,16 +54,26 @@ def _run(
     if reference_files:
         references = [f for f in reference_files if f]
 
+    supplementary = []
+    if supplementary_files:
+        supplementary = [f for f in supplementary_files if f]
+
+    # Parse extra instructions (one per line)
+    extra_list = [
+        line.strip() for line in extra_instructions.splitlines() if line.strip()
+    ]
+
     config = Config(
         title=title.strip(),
         authors=authors,
-        slides_pdf=slides_pdf,
+        slides=slides,
         language=language,
         tone=tone,
         max_words=max_words if max_words > 0 else None,
         references=references,
+        supplementary=supplementary,
         template=template_file or "",
-        extra_instructions=extra_instructions.strip(),
+        extra_instructions=extra_list,
     )
 
     prompt = build_prompt(config)
@@ -92,8 +106,9 @@ def create_app() -> gr.Blocks:
         with gr.Row():
             with gr.Column():
                 slides_input = gr.File(
-                    label="Slides PDF (required)",
+                    label="Slides PDF(s) (required)",
                     file_types=[".pdf"],
+                    file_count="multiple",
                     type="filepath",
                 )
                 title_input = gr.Textbox(
@@ -134,10 +149,16 @@ def create_app() -> gr.Blocks:
                     file_count="multiple",
                     type="filepath",
                 )
+                supplementary_input = gr.File(
+                    label="Supplementary materials (optional, e.g., call for papers, workshop description)",
+                    file_types=[".pdf"],
+                    file_count="multiple",
+                    type="filepath",
+                )
                 extra_input = gr.Textbox(
-                    label="Extra instructions (optional)",
-                    placeholder="Focus on the numerical results.",
-                    lines=2,
+                    label="Extra instructions (optional, one per line)",
+                    placeholder="Focus on the numerical results.\nEmphasize the novelty of the method.",
+                    lines=3,
                 )
                 body_only_input = gr.Checkbox(
                     label="Body only (no full LaTeX document)",
@@ -164,6 +185,7 @@ def create_app() -> gr.Blocks:
                 max_words_input,
                 template_input,
                 reference_input,
+                supplementary_input,
                 extra_input,
                 body_only_input,
             ],

@@ -28,23 +28,27 @@ def cli() -> None:
 
 @cli.command()
 @click.argument("config_file", type=click.Path(), default="doc-to-abstract.yaml")
-@click.option("--slides", type=click.Path(exists=True), default=None, help="Override slides PDF path")
+@click.option("--slides", type=click.Path(exists=True), multiple=True, help="Slides PDF path(s); can be repeated")
+@click.option("--supplementary", type=click.Path(exists=True), multiple=True, help="Supplementary material PDF(s); can be repeated")
 @click.option("--template", type=click.Path(exists=True), default=None, help="Conference/workshop template file (.tex or .docx)")
 @click.option("--output", "-o", type=str, default=None, help="Override output file path")
 @click.option("--language", type=str, default=None, help="Override language")
 @click.option("--tone", type=str, default=None, help="Override tone")
 @click.option("--max-words", type=int, default=None, help="Override max word count")
 @click.option("--max-characters", type=int, default=None, help="Override max character count")
+@click.option("--extra-instructions", type=str, multiple=True, help="Extra instruction(s); can be repeated")
 @click.option("--body-only", is_flag=True, help="Output only the abstract block")
 def generate(
     config_file: str,
-    slides: str | None,
+    slides: tuple[str, ...],
+    supplementary: tuple[str, ...],
     template: str | None,
     output: str | None,
     language: str | None,
     tone: str | None,
     max_words: int | None,
     max_characters: int | None,
+    extra_instructions: tuple[str, ...],
     body_only: bool,
 ) -> None:
     """Generate an abstract from slides PDF.
@@ -54,7 +58,9 @@ def generate(
     try:
         overrides: dict = {}
         if slides:
-            overrides["slides_pdf"] = slides
+            overrides["slides"] = list(slides)
+        if supplementary:
+            overrides["supplementary"] = list(supplementary)
         if template:
             overrides["template"] = template
         if output:
@@ -67,13 +73,15 @@ def generate(
             overrides["max_words"] = max_words
         if max_characters is not None:
             overrides["max_characters"] = max_characters
+        if extra_instructions:
+            overrides["extra_instructions"] = list(extra_instructions)
 
         console.print("[bold]Loading configuration...[/bold]")
         config = load_config(config_file, overrides=overrides)
 
         console.print(f"  Title:    {config.title}")
         console.print(f"  Authors:  {', '.join(a.name for a in config.authors)}")
-        console.print(f"  Slides:   {config.slides_pdf}")
+        console.print(f"  Slides:   {len(config.slides)} file(s)")
         console.print(f"  Language: {config.language}")
         console.print(f"  Tone:     {config.tone}")
         if config.max_words:
@@ -82,8 +90,12 @@ def generate(
             console.print(f"  Limit:    {config.max_characters} characters")
         if config.references:
             console.print(f"  Refs:     {len(config.references)} file(s)")
+        if config.supplementary:
+            console.print(f"  Suppl.:   {len(config.supplementary)} file(s)")
         if config.template:
             console.print(f"  Template: {config.template}")
+        if config.extra_instructions:
+            console.print(f"  Extra:    {len(config.extra_instructions)} instruction(s)")
         console.print()
 
         console.print("[bold blue]Building prompt...[/bold blue]")

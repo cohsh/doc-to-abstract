@@ -21,15 +21,16 @@ class Author:
 class Config:
     title: str
     authors: list[Author]
-    slides_pdf: str
+    slides: list[str]
     language: str = "English"
     tone: str = "formal"
     max_words: int | None = None
     max_characters: int | None = None
     references: list[str] = field(default_factory=list)
+    supplementary: list[str] = field(default_factory=list)
     template: str = ""
     output: str = "abstract.tex"
-    extra_instructions: str = ""
+    extra_instructions: list[str] = field(default_factory=list)
 
 
 def load_config(config_path: str, overrides: dict | None = None) -> Config:
@@ -55,8 +56,6 @@ def load_config(config_path: str, overrides: dict | None = None) -> Config:
         raise ConfigError("'title' is required")
     if not data.get("authors"):
         raise ConfigError("'authors' is required (at least one author)")
-    if not data.get("slides_pdf"):
-        raise ConfigError("'slides_pdf' is required")
 
     # Parse authors
     authors = []
@@ -73,12 +72,29 @@ def load_config(config_path: str, overrides: dict | None = None) -> Config:
             email=author_data.get("email", ""),
         ))
 
-    # Validate slides PDF
-    slides_path = Path(data["slides_pdf"])
-    if not slides_path.exists():
-        raise ConfigError(f"Slides PDF not found: {data['slides_pdf']}")
-    if slides_path.stat().st_size > MAX_PDF_SIZE:
-        raise ConfigError(f"Slides PDF exceeds 32MB limit: {data['slides_pdf']}")
+    # Validate slides (backward compatible: accept slides_pdf or slides)
+    raw_slides = data.get("slides")
+    raw_slides_pdf = data.get("slides_pdf")
+    if raw_slides and raw_slides_pdf:
+        raise ConfigError("Use either 'slides' or 'slides_pdf', not both")
+    if raw_slides_pdf is not None:
+        raw_slides = raw_slides_pdf
+    if not raw_slides:
+        raise ConfigError("'slides' is required (at least one slides PDF)")
+    if isinstance(raw_slides, str):
+        slides_list = [raw_slides]
+    elif isinstance(raw_slides, list):
+        slides_list = raw_slides
+    else:
+        raise ConfigError("'slides' must be a string or a list of strings")
+    if not slides_list:
+        raise ConfigError("'slides' must contain at least one PDF path")
+    for s_path in slides_list:
+        p = Path(s_path)
+        if not p.exists():
+            raise ConfigError(f"Slides PDF not found: {s_path}")
+        if p.stat().st_size > MAX_PDF_SIZE:
+            raise ConfigError(f"Slides PDF exceeds 32MB limit: {s_path}")
 
     # Validate references
     references = data.get("references", []) or []
@@ -88,6 +104,15 @@ def load_config(config_path: str, overrides: dict | None = None) -> Config:
             raise ConfigError(f"Reference PDF not found: {ref_path}")
         if p.stat().st_size > MAX_PDF_SIZE:
             raise ConfigError(f"Reference PDF exceeds 32MB limit: {ref_path}")
+
+    # Validate supplementary materials
+    supplementary = data.get("supplementary", []) or []
+    for sup_path in supplementary:
+        p = Path(sup_path)
+        if not p.exists():
+            raise ConfigError(f"Supplementary PDF not found: {sup_path}")
+        if p.stat().st_size > MAX_PDF_SIZE:
+            raise ConfigError(f"Supplementary PDF exceeds 32MB limit: {sup_path}")
 
     # Validate mutual exclusivity of max_words and max_characters
     max_words = data.get("max_words")
@@ -105,16 +130,26 @@ def load_config(config_path: str, overrides: dict | None = None) -> Config:
         if suffix not in (".tex", ".docx", ".pdf"):
             raise ConfigError(f"Unsupported template format: {suffix} (use .tex, .docx, or .pdf)")
 
+    # Normalize extra_instructions (backward compatible: accept string or list)
+    raw_extra = data.get("extra_instructions", [])
+    if isinstance(raw_extra, str):
+        extra_instructions = [raw_extra] if raw_extra.strip() else []
+    elif isinstance(raw_extra, list):
+        extra_instructions = [str(e).strip() for e in raw_extra if str(e).strip()]
+    else:
+        extra_instructions = []
+
     return Config(
         title=data["title"],
         authors=authors,
-        slides_pdf=str(slides_path),
+        slides=[str(Path(s)) for s in slides_list],
         language=data.get("language", "English"),
         tone=data.get("tone", "formal"),
         max_words=max_words,
         max_characters=max_characters,
         references=references,
+        supplementary=supplementary,
         template=template,
         output=data.get("output", "abstract.tex"),
-        extra_instructions=data.get("extra_instructions", ""),
+        extra_instructions=extra_instructions,
     )

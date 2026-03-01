@@ -11,7 +11,7 @@ from doc_to_abstract.template import read_template
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 
 
-def extract_text_from_pdf(pdf_path: str) -> str:
+def extract_text_from_pdf(pdf_path: str, page_label: str = "Slide") -> str:
     """Extract text from a PDF file using PyMuPDF."""
     try:
         doc = pymupdf.open(pdf_path)
@@ -22,7 +22,7 @@ def extract_text_from_pdf(pdf_path: str) -> str:
     for i, page in enumerate(doc, 1):
         text = page.get_text().strip()
         if text:
-            pages.append(f"--- Slide {i} ---\n{text}")
+            pages.append(f"--- {page_label} {i} ---\n{text}")
     doc.close()
 
     if not pages:
@@ -58,17 +58,30 @@ def build_prompt(config: Config) -> str:
         title=config.title,
         authors=authors_text,
         length_constraint=length_constraint,
-        extra_instructions=config.extra_instructions or "",
     )
 
+    # Append extra instructions
+    if config.extra_instructions:
+        extra_text = "\n".join(f"- {inst}" for inst in config.extra_instructions)
+        prompt += f"\n\n## Additional Instructions\n{extra_text}\n"
+
     # Append extracted slide text
-    slides_text = extract_text_from_pdf(config.slides_pdf)
-    prompt += f"\n\n## Presentation Slides Content\n{slides_text}\n"
+    for i, slide_path in enumerate(config.slides, 1):
+        slides_text = extract_text_from_pdf(slide_path, page_label="Slide")
+        if len(config.slides) > 1:
+            prompt += f"\n\n## Presentation Slides (Deck #{i}: {Path(slide_path).name})\n{slides_text}\n"
+        else:
+            prompt += f"\n\n## Presentation Slides Content\n{slides_text}\n"
 
     # Append reference papers
     for i, ref_path in enumerate(config.references, 1):
         ref_text = extract_text_from_pdf(ref_path)
         prompt += f"\n## Reference Paper #{i}\n{ref_text}\n"
+
+    # Append supplementary materials
+    for i, sup_path in enumerate(config.supplementary, 1):
+        sup_text = extract_text_from_pdf(sup_path, page_label="Page")
+        prompt += f"\n## Supplementary Material #{i} ({Path(sup_path).name})\n{sup_text}\n"
 
     # Append template content
     if config.template:

@@ -7,10 +7,10 @@ A CLI tool for researchers to quickly generate conference/workshop/research meet
 ## How It Works
 
 ```
-slides.pdf ──> [PyMuPDF: text extraction] ──> [Claude Code: abstract generation] ──> abstract.tex
+slides + refs + supplementary ──> [PyMuPDF: text extraction] ──> [Claude Code: abstract generation] ──> abstract.tex
 ```
 
-1. PyMuPDF extracts text from your slide PDF
+1. PyMuPDF extracts text from your slide PDFs (and optional references/supplementary materials)
 2. The extracted text is combined with your paper metadata (title, authors, etc.) into a prompt
 3. Claude Code generates an academic abstract
 4. The result is output as a LaTeX file
@@ -60,7 +60,7 @@ uv sync
 uv run doc-to-abstract serve
 ```
 
-Open http://localhost:7860 in your browser. Upload your slides PDF, fill in the fields, and click "Generate Abstract".
+Open http://localhost:7860 in your browser. Upload your slides PDF(s), fill in the fields, and click "Generate Abstract".
 
 ### CLI
 
@@ -77,7 +77,8 @@ title: "My Research Title"
 authors:
   - name: "Alice Example"
     affiliation: "Example University"
-slides_pdf: "slides.pdf"
+slides:
+  - "slides.pdf"
 language: "English"
 max_words: 300
 ```
@@ -100,7 +101,7 @@ All settings are defined in `doc-to-abstract.yaml`.
 |-------|-------------|
 | `title` | Title of your presentation/paper |
 | `authors` | List of authors, each with `name` and `affiliation` (and optional `email`) |
-| `slides_pdf` | Path to your presentation slides PDF |
+| `slides` | Path(s) to presentation slides PDF(s). Can be a single string or a list. Legacy `slides_pdf` is also supported |
 
 ### Optional Fields
 
@@ -111,9 +112,10 @@ All settings are defined in `doc-to-abstract.yaml`.
 | `max_words` | (none) | Maximum word count (mutually exclusive with `max_characters`) |
 | `max_characters` | (none) | Maximum character count (mutually exclusive with `max_words`) |
 | `references` | `[]` | List of reference paper PDF paths for context and style |
+| `supplementary` | `[]` | List of supplementary material PDF paths (e.g., call for papers, workshop description) |
 | `template` | `""` | Conference/workshop template file (`.tex`, `.docx`, or `.pdf`). Used to understand format requirements. For `.tex`/`.docx`, the abstract is also inserted into a copy |
 | `output` | `"abstract.tex"` | Output file path |
-| `extra_instructions` | `""` | Additional instructions for the LLM (e.g., `"Focus on the numerical results."`) |
+| `extra_instructions` | `[]` | List of additional instructions for the LLM. A single string is also accepted |
 
 ### Example
 
@@ -127,7 +129,8 @@ authors:
   - name: "Bob Sample"
     affiliation: "Example Institute"
 
-slides_pdf: "presentation.pdf"
+slides:
+  - "presentation.pdf"
 
 language: "English"
 tone: "formal"
@@ -136,8 +139,15 @@ max_words: 300
 references:
   - "refs/related-work.pdf"
 
+supplementary:
+  - "cfp.pdf"
+
 template: "conference-template.tex"
 output: "abstract.tex"
+
+extra_instructions:
+  - "Focus on the numerical results."
+  - "Emphasize the novelty of the proposed method."
 ```
 
 ## CLI Reference
@@ -154,6 +164,15 @@ uv run doc-to-abstract generate my-config.yaml
 
 # Override options via CLI flags
 uv run doc-to-abstract generate --language Japanese --max-words 200
+
+# Multiple slides PDFs
+uv run doc-to-abstract generate --slides deck1.pdf --slides deck2.pdf
+
+# Add supplementary materials (e.g., call for papers)
+uv run doc-to-abstract generate --supplementary cfp.pdf
+
+# Add extra instructions
+uv run doc-to-abstract generate --extra-instructions "Focus on results."
 
 # Use a conference template (.tex or .docx)
 uv run doc-to-abstract generate --template conference-template.tex
@@ -174,13 +193,15 @@ uv run doc-to-abstract --version
 | Option | Description |
 |--------|-------------|
 | `CONFIG_FILE` | Path to YAML config (default: `doc-to-abstract.yaml`) |
-| `--slides PATH` | Override slides PDF path |
+| `--slides PATH` | Slides PDF path(s); can be repeated |
+| `--supplementary PATH` | Supplementary material PDF(s); can be repeated |
 | `--template PATH` | Conference/workshop template file (`.tex`, `.docx`, or `.pdf`) |
 | `--output, -o PATH` | Override output file path |
 | `--language TEXT` | Override language |
 | `--tone TEXT` | Override tone |
 | `--max-words INT` | Override max word count |
 | `--max-characters INT` | Override max character count |
+| `--extra-instructions TEXT` | Extra instruction(s); can be repeated |
 | `--body-only` | Output only the abstract block |
 
 ## Output
