@@ -553,7 +553,7 @@ def create_app() -> gr.Blocks:
             '</svg>'
             '<div>'
             '<div style="font-size: 1.4em; font-weight: bold; color: #eee;">doc-to-abstract</div>'
-            '<div style="font-size: 0.85em; color: #aaa;">Generate academic abstracts from your research materials using Claude Code.</div>'
+            '<div style="font-size: 0.85em; color: #aaa;">Draft academic abstracts from your research materials using Claude Code.</div>'
             '</div>'
             '</div>'
         )

@@ -4,9 +4,9 @@
 
 <h1 align="center">doc-to-abstract</h1>
 
-<p align="center">Generate academic abstracts from your research materials using Claude Code.</p>
+<p align="center">Draft academic abstracts from your research materials using Claude Code.</p>
 
-A CLI + Web UI tool for researchers to quickly generate conference/workshop/research meeting abstracts from various materials (manuscripts, slides, notes, etc.).
+A CLI + Web UI tool that helps researchers quickly draft conference/workshop/research meeting abstracts from various materials (manuscripts, slides, notes, etc.). The generated text is intended as a starting point — always review and revise before submission.
 
 ## Screenshots
 
