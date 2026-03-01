@@ -101,6 +101,7 @@ All settings are defined in `doc-to-abstract.yaml`.
 | `max_words` | (none) | Maximum word count (mutually exclusive with `max_characters`) |
 | `max_characters` | (none) | Maximum character count (mutually exclusive with `max_words`) |
 | `references` | `[]` | List of reference paper PDF paths for context and style |
+| `template` | `""` | Conference/workshop template file (`.tex`, `.docx`, or `.pdf`). Used to understand format requirements. For `.tex`/`.docx`, the abstract is also inserted into a copy |
 | `output` | `"abstract.tex"` | Output file path |
 | `extra_instructions` | `""` | Additional instructions for the LLM (e.g., `"Focus on the numerical results."`) |
 
@@ -125,6 +126,7 @@ max_words: 300
 references:
   - "refs/related-work.pdf"
 
+template: "conference-template.tex"
 output: "abstract.tex"
 ```
 
@@ -143,6 +145,9 @@ uv run doc-to-abstract generate my-config.yaml
 # Override options via CLI flags
 uv run doc-to-abstract generate --language Japanese --max-words 200
 
+# Use a conference template (.tex or .docx)
+uv run doc-to-abstract generate --template conference-template.tex
+
 # Output only the \begin{abstract}...\end{abstract} block
 uv run doc-to-abstract generate --body-only
 
@@ -156,6 +161,7 @@ uv run doc-to-abstract --version
 |--------|-------------|
 | `CONFIG_FILE` | Path to YAML config (default: `doc-to-abstract.yaml`) |
 | `--slides PATH` | Override slides PDF path |
+| `--template PATH` | Conference/workshop template file (`.tex`, `.docx`, or `.pdf`) |
 | `--output, -o PATH` | Override output file path |
 | `--language TEXT` | Override language |
 | `--tone TEXT` | Override tone |

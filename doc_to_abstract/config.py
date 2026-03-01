@@ -27,6 +27,7 @@ class Config:
     max_words: int | None = None
     max_characters: int | None = None
     references: list[str] = field(default_factory=list)
+    template: str = ""
     output: str = "abstract.tex"
     extra_instructions: str = ""
 
@@ -94,6 +95,16 @@ def load_config(config_path: str, overrides: dict | None = None) -> Config:
     if max_words and max_characters:
         raise ConfigError("'max_words' and 'max_characters' are mutually exclusive")
 
+    # Validate template file
+    template = data.get("template", "")
+    if template:
+        template_path = Path(template)
+        if not template_path.exists():
+            raise ConfigError(f"Template file not found: {template}")
+        suffix = template_path.suffix.lower()
+        if suffix not in (".tex", ".docx", ".pdf"):
+            raise ConfigError(f"Unsupported template format: {suffix} (use .tex, .docx, or .pdf)")
+
     return Config(
         title=data["title"],
         authors=authors,
@@ -103,6 +114,7 @@ def load_config(config_path: str, overrides: dict | None = None) -> Config:
         max_words=max_words,
         max_characters=max_characters,
         references=references,
+        template=template,
         output=data.get("output", "abstract.tex"),
         extra_instructions=data.get("extra_instructions", ""),
     )

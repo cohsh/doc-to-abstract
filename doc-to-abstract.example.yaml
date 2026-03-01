@@ -31,6 +31,11 @@ max_words: 300
 #   - "refs/paper1.pdf"
 #   - "refs/paper2.pdf"
 
+# Optional: Conference/workshop template file (.tex, .docx, or .pdf)
+# The template content is used to understand format requirements and guidelines.
+# For .tex and .docx templates, the abstract is also written directly into a copy.
+# template: "template.tex"
+
 # Optional: Output file path (default: abstract.tex)
 output: "abstract.tex"
 

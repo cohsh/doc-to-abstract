@@ -13,6 +13,7 @@ from doc_to_abstract.config import load_config
 from doc_to_abstract.exceptions import DocToAbstractError
 from doc_to_abstract.latex import render_latex
 from doc_to_abstract.prompt import build_prompt
+from doc_to_abstract.template import fill_template
 
 console = Console()
 
@@ -28,6 +29,7 @@ def cli() -> None:
 @cli.command()
 @click.argument("config_file", type=click.Path(), default="doc-to-abstract.yaml")
 @click.option("--slides", type=click.Path(exists=True), default=None, help="Override slides PDF path")
+@click.option("--template", type=click.Path(exists=True), default=None, help="Conference/workshop template file (.tex or .docx)")
 @click.option("--output", "-o", type=str, default=None, help="Override output file path")
 @click.option("--language", type=str, default=None, help="Override language")
 @click.option("--tone", type=str, default=None, help="Override tone")
@@ -37,6 +39,7 @@ def cli() -> None:
 def generate(
     config_file: str,
     slides: str | None,
+    template: str | None,
     output: str | None,
     language: str | None,
     tone: str | None,
@@ -52,6 +55,8 @@ def generate(
         overrides: dict = {}
         if slides:
             overrides["slides_pdf"] = slides
+        if template:
+            overrides["template"] = template
         if output:
             overrides["output"] = output
         if language:
@@ -77,6 +82,8 @@ def generate(
             console.print(f"  Limit:    {config.max_characters} characters")
         if config.references:
             console.print(f"  Refs:     {len(config.references)} file(s)")
+        if config.template:
+            console.print(f"  Template: {config.template}")
         console.print()
 
         console.print("[bold blue]Building prompt...[/bold blue]")
@@ -85,11 +92,16 @@ def generate(
         console.print("[bold blue]Calling Claude Code...[/bold blue]")
         abstract_text = generate_abstract(prompt)
 
-        console.print("[bold blue]Generating LaTeX...[/bold blue]")
-        latex_output = render_latex(abstract_text, config, body_only=body_only)
-
         output_path = config.output
-        Path(output_path).write_text(latex_output, encoding="utf-8")
+
+        # If a fillable template (.tex or .docx) is provided, write into it
+        if config.template and Path(config.template).suffix.lower() in (".tex", ".docx"):
+            console.print("[bold blue]Filling template...[/bold blue]")
+            fill_template(config.template, abstract_text, output_path)
+        else:
+            console.print("[bold blue]Generating LaTeX...[/bold blue]")
+            latex_output = render_latex(abstract_text, config, body_only=body_only)
+            Path(output_path).write_text(latex_output, encoding="utf-8")
 
         console.print(f"\n[bold green]Done![/bold green] Abstract written to: [cyan]{output_path}[/cyan]")
 

@@ -6,6 +6,7 @@ import pymupdf
 
 from doc_to_abstract.config import Config
 from doc_to_abstract.exceptions import PDFError
+from doc_to_abstract.template import read_template
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 
@@ -68,5 +69,15 @@ def build_prompt(config: Config) -> str:
     for i, ref_path in enumerate(config.references, 1):
         ref_text = extract_text_from_pdf(ref_path)
         prompt += f"\n## Reference Paper #{i}\n{ref_text}\n"
+
+    # Append template content
+    if config.template:
+        template_text = read_template(config.template)
+        prompt += (
+            "\n## Submission Template\n"
+            "The following is the submission template provided by the conference/workshop organizers. "
+            "Use it to understand the required format, structure, length constraints, and any specific guidelines.\n\n"
+            f"{template_text}\n"
+        )
 
     return prompt
