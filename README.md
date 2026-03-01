@@ -66,13 +66,21 @@ Open http://localhost:7860 in your browser. The UI has 3 tabs:
 2. **Paper Info** - Enter title, authors, language, tone, and word limit
 3. **Annotations & Generate** - Set importance/comments per file, add extra instructions, and generate
 
+#### Revising the Abstract
+
+After generating, you can refine the abstract without starting over:
+
+- **Direct editing** - The generated abstract is editable. Changes are auto-saved to `doc-to-abstract.yaml`
+- **Revise Abstract** - Enter revision instructions (e.g., "Make it shorter", "Emphasize the results") and click **Revise Abstract** to have Claude Code revise the current abstract. Multi-line instructions are supported (Shift+Enter)
+
 #### Session Persistence
 
 Your work is automatically saved and restored across server restarts:
 
 - **Save config** button (available in every tab) saves all settings and copies uploaded files to `materials/` directory
 - **Generate** also auto-saves before generating
-- On startup, settings are automatically restored from `doc-to-abstract.yaml` if it exists
+- The generated abstract is saved to `doc-to-abstract.yaml` and restored on startup
+- On startup, settings and the last abstract are automatically restored from `doc-to-abstract.yaml` if it exists
 - You can also load a different config via **Load config** in Tab 2
 
 This means you can work on an abstract across multiple days without losing progress.
@@ -131,6 +139,7 @@ All settings are defined in `doc-to-abstract.yaml`.
 | `output` | `"abstract.tex"` | Output file path |
 | `extra_instructions` | `[]` | List of additional instructions for the LLM. A single string is also accepted |
 | `annotations` | `{}` | Per-file importance (`high`/`medium`/`low`) and comments, keyed by filename |
+| `generated_abstract` | `""` | Previously generated abstract text (auto-saved by Web UI) |
 
 ### Example
 
