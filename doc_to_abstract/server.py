@@ -363,8 +363,42 @@ def _run(
         return abstract_text, out.name
 
 
+def _load_initial_config() -> dict:
+    """Load config from default YAML if it exists, returning defaults for UI fields."""
+    defaults = {
+        "slides": None,
+        "references": None,
+        "supplementary": None,
+        "template": None,
+        "title": "",
+        "authors": "",
+        "language": "English",
+        "tone": "formal",
+        "max_words": 300,
+        "annotations": [],
+        "extra_instructions": "",
+        "body_only": False,
+    }
+    if not CONFIG_FILE.exists():
+        return defaults
+    try:
+        result = _load_config(str(CONFIG_FILE))
+        keys = [
+            "slides", "references", "supplementary", "template",
+            "title", "authors", "language", "tone", "max_words",
+            "annotations", "extra_instructions", "body_only",
+        ]
+        for i, key in enumerate(keys):
+            defaults[key] = result[i]
+    except Exception:
+        pass
+    return defaults
+
+
 def create_app() -> gr.Blocks:
     """Create the Gradio app with tabbed layout."""
+    init = _load_initial_config()
+
     with gr.Blocks(title="doc-to-abstract") as app:
         gr.Markdown("# doc-to-abstract\nGenerate academic abstracts from presentation slides using Claude Code.")
 
@@ -378,23 +412,27 @@ def create_app() -> gr.Blocks:
                             file_types=[".pdf", ".pptx"],
                             file_count="multiple",
                             type="filepath",
+                            value=init["slides"],
                         )
                         reference_input = gr.File(
                             label="Reference papers (optional)",
                             file_types=[".pdf", ".pptx"],
                             file_count="multiple",
                             type="filepath",
+                            value=init["references"],
                         )
                         supplementary_input = gr.File(
                             label="Supplementary materials (optional, e.g., call for papers)",
                             file_types=[".pdf", ".pptx"],
                             file_count="multiple",
                             type="filepath",
+                            value=init["supplementary"],
                         )
                         template_input = gr.File(
                             label="Conference template (optional, .tex / .docx / .pdf)",
                             file_types=[".tex", ".docx", ".pdf"],
                             type="filepath",
+                            value=init["template"],
                         )
                         save_btn_1 = gr.Button("Save config", variant="secondary", size="sm")
 
@@ -403,26 +441,28 @@ def create_app() -> gr.Blocks:
                         title_input = gr.Textbox(
                             label="Title (required)",
                             placeholder="My Research Title",
+                            value=init["title"],
                         )
                         authors_input = gr.Textbox(
                             label="Authors (one per line: Name, Affiliation)",
                             placeholder="Alice Example, Example University\nBob Sample, Example Institute",
                             lines=3,
+                            value=init["authors"],
                         )
                         with gr.Row():
                             language_input = gr.Dropdown(
                                 label="Language",
                                 choices=["English", "Japanese", "Chinese", "Korean", "German", "French", "Spanish"],
-                                value="English",
+                                value=init["language"],
                             )
                             tone_input = gr.Dropdown(
                                 label="Tone",
                                 choices=["formal", "semi-formal", "casual"],
-                                value="formal",
+                                value=init["tone"],
                             )
                             max_words_input = gr.Number(
                                 label="Max words (0 = no limit)",
-                                value=300,
+                                value=init["max_words"],
                                 precision=0,
                             )
                         save_btn_2 = gr.Button("Save config", variant="secondary", size="sm")
@@ -448,6 +488,7 @@ def create_app() -> gr.Blocks:
                             interactive=True,
                             label="File Annotations",
                             wrap=True,
+                            value=init["annotations"] or None,
                         )
                         refresh_btn = gr.Button("Refresh file list", variant="secondary", size="sm")
 
@@ -455,10 +496,11 @@ def create_app() -> gr.Blocks:
                             label="Extra instructions (optional, one per line)",
                             placeholder="Focus on the numerical results.\nEmphasize the novelty of the method.",
                             lines=3,
+                            value=init["extra_instructions"],
                         )
                         body_only_input = gr.Checkbox(
                             label="Body only (no full LaTeX document)",
-                            value=False,
+                            value=init["body_only"],
                         )
                         save_btn_3 = gr.Button("Save config", variant="secondary", size="sm")
                         generate_btn = gr.Button("Generate Abstract", variant="primary")
