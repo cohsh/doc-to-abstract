@@ -6,8 +6,8 @@ class ConfigError(DocToAbstractError):
     """Error in configuration file."""
 
 
-class PDFError(DocToAbstractError):
-    """Error reading or validating PDF file."""
+class FileExtractionError(DocToAbstractError):
+    """Error reading or extracting text from a file."""
 
 
 class APIError(DocToAbstractError):

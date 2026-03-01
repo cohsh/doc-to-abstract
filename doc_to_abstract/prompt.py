@@ -3,12 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 
 import pymupdf
+from pptx import Presentation
 
-from doc_to_abstract.config import Config
-from doc_to_abstract.exceptions import PDFError
+from doc_to_abstract.config import Config, FileAnnotation
+from doc_to_abstract.exceptions import FileExtractionError
 from doc_to_abstract.template import read_template
-
-from doc_to_abstract.config import FileAnnotation
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 
@@ -26,12 +25,12 @@ def _format_annotation(annotations: dict[str, FileAnnotation], filepath: str) ->
     return " ".join(parts)
 
 
-def extract_text_from_pdf(pdf_path: str, page_label: str = "Slide") -> str:
+def _extract_pdf(file_path: str, page_label: str) -> str:
     """Extract text from a PDF file using PyMuPDF."""
     try:
-        doc = pymupdf.open(pdf_path)
+        doc = pymupdf.open(file_path)
     except Exception as e:
-        raise PDFError(f"Failed to open PDF: {pdf_path}: {e}") from e
+        raise FileExtractionError(f"Failed to open PDF: {file_path}: {e}") from e
 
     pages = []
     for i, page in enumerate(doc, 1):
@@ -41,9 +40,42 @@ def extract_text_from_pdf(pdf_path: str, page_label: str = "Slide") -> str:
     doc.close()
 
     if not pages:
-        raise PDFError(f"No text could be extracted from: {pdf_path}")
+        raise FileExtractionError(f"No text could be extracted from: {file_path}")
 
     return "\n\n".join(pages)
+
+
+def _extract_pptx(file_path: str, page_label: str) -> str:
+    """Extract text from a PPTX file using python-pptx."""
+    try:
+        prs = Presentation(file_path)
+    except Exception as e:
+        raise FileExtractionError(f"Failed to open PPTX: {file_path}: {e}") from e
+
+    pages = []
+    for i, slide in enumerate(prs.slides, 1):
+        texts = []
+        for shape in slide.shapes:
+            if shape.has_text_frame:
+                for paragraph in shape.text_frame.paragraphs:
+                    text = paragraph.text.strip()
+                    if text:
+                        texts.append(text)
+        if texts:
+            pages.append(f"--- {page_label} {i} ---\n" + "\n".join(texts))
+
+    if not pages:
+        raise FileExtractionError(f"No text could be extracted from: {file_path}")
+
+    return "\n\n".join(pages)
+
+
+def extract_text(file_path: str, page_label: str = "Slide") -> str:
+    """Extract text from a PDF or PPTX file."""
+    suffix = Path(file_path).suffix.lower()
+    if suffix == ".pptx":
+        return _extract_pptx(file_path, page_label)
+    return _extract_pdf(file_path, page_label)
 
 
 def build_prompt(config: Config) -> str:
@@ -82,7 +114,7 @@ def build_prompt(config: Config) -> str:
 
     # Append extracted slide text
     for i, slide_path in enumerate(config.slides, 1):
-        slides_text = extract_text_from_pdf(slide_path, page_label="Slide")
+        slides_text = extract_text(slide_path, page_label="Slide")
         ann_text = _format_annotation(config.annotations, slide_path)
         if len(config.slides) > 1:
             header = f"\n\n## Presentation Slides (Deck #{i}: {Path(slide_path).name})"
@@ -94,7 +126,7 @@ def build_prompt(config: Config) -> str:
 
     # Append reference papers
     for i, ref_path in enumerate(config.references, 1):
-        ref_text = extract_text_from_pdf(ref_path)
+        ref_text = extract_text(ref_path)
         ann_text = _format_annotation(config.annotations, ref_path)
         header = f"\n## Reference Paper #{i} ({Path(ref_path).name})"
         if ann_text:
@@ -103,7 +135,7 @@ def build_prompt(config: Config) -> str:
 
     # Append supplementary materials
     for i, sup_path in enumerate(config.supplementary, 1):
-        sup_text = extract_text_from_pdf(sup_path, page_label="Page")
+        sup_text = extract_text(sup_path, page_label="Page")
         ann_text = _format_annotation(config.annotations, sup_path)
         header = f"\n## Supplementary Material #{i} ({Path(sup_path).name})"
         if ann_text:

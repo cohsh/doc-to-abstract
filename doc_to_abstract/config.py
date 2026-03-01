@@ -7,7 +7,7 @@ import yaml
 
 from doc_to_abstract.exceptions import ConfigError
 
-MAX_PDF_SIZE = 32 * 1024 * 1024  # 32 MB
+MAX_FILE_SIZE = 32 * 1024 * 1024  # 32 MB
 
 
 @dataclass
@@ -87,7 +87,7 @@ def load_config(config_path: str, overrides: dict | None = None) -> Config:
     if raw_slides_pdf is not None:
         raw_slides = raw_slides_pdf
     if not raw_slides:
-        raise ConfigError("'slides' is required (at least one slides PDF)")
+        raise ConfigError("'slides' is required (at least one file)")
     if isinstance(raw_slides, str):
         slides_list = [raw_slides]
     elif isinstance(raw_slides, list):
@@ -95,31 +95,31 @@ def load_config(config_path: str, overrides: dict | None = None) -> Config:
     else:
         raise ConfigError("'slides' must be a string or a list of strings")
     if not slides_list:
-        raise ConfigError("'slides' must contain at least one PDF path")
+        raise ConfigError("'slides' must contain at least one file path")
     for s_path in slides_list:
         p = Path(s_path)
         if not p.exists():
-            raise ConfigError(f"Slides PDF not found: {s_path}")
-        if p.stat().st_size > MAX_PDF_SIZE:
-            raise ConfigError(f"Slides PDF exceeds 32MB limit: {s_path}")
+            raise ConfigError(f"File not found: {s_path}")
+        if p.stat().st_size > MAX_FILE_SIZE:
+            raise ConfigError(f"File exceeds 32MB limit: {s_path}")
 
     # Validate references
     references = data.get("references", []) or []
     for ref_path in references:
         p = Path(ref_path)
         if not p.exists():
-            raise ConfigError(f"Reference PDF not found: {ref_path}")
-        if p.stat().st_size > MAX_PDF_SIZE:
-            raise ConfigError(f"Reference PDF exceeds 32MB limit: {ref_path}")
+            raise ConfigError(f"Reference file not found: {ref_path}")
+        if p.stat().st_size > MAX_FILE_SIZE:
+            raise ConfigError(f"Reference file exceeds 32MB limit: {ref_path}")
 
     # Validate supplementary materials
     supplementary = data.get("supplementary", []) or []
     for sup_path in supplementary:
         p = Path(sup_path)
         if not p.exists():
-            raise ConfigError(f"Supplementary PDF not found: {sup_path}")
-        if p.stat().st_size > MAX_PDF_SIZE:
-            raise ConfigError(f"Supplementary PDF exceeds 32MB limit: {sup_path}")
+            raise ConfigError(f"Supplementary file not found: {sup_path}")
+        if p.stat().st_size > MAX_FILE_SIZE:
+            raise ConfigError(f"Supplementary file exceeds 32MB limit: {sup_path}")
 
     # Validate mutual exclusivity of max_words and max_characters
     max_words = data.get("max_words")

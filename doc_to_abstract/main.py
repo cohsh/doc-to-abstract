@@ -23,13 +23,13 @@ EXAMPLE_YAML = Path(__file__).resolve().parent.parent / "doc-to-abstract.example
 @click.group()
 @click.version_option(version=__version__)
 def cli() -> None:
-    """Generate academic abstracts from presentation slide PDFs using Claude Code."""
+    """Generate academic abstracts from presentation slides using Claude Code."""
 
 
 @cli.command()
 @click.argument("config_file", type=click.Path(), default="doc-to-abstract.yaml")
-@click.option("--slides", type=click.Path(exists=True), multiple=True, help="Slides PDF path(s); can be repeated")
-@click.option("--supplementary", type=click.Path(exists=True), multiple=True, help="Supplementary material PDF(s); can be repeated")
+@click.option("--slides", type=click.Path(exists=True), multiple=True, help="Main material path(s) (.pdf/.pptx); can be repeated")
+@click.option("--supplementary", type=click.Path(exists=True), multiple=True, help="Supplementary material(s) (.pdf/.pptx); can be repeated")
 @click.option("--template", type=click.Path(exists=True), default=None, help="Conference/workshop template file (.tex or .docx)")
 @click.option("--output", "-o", type=str, default=None, help="Override output file path")
 @click.option("--language", type=str, default=None, help="Override language")
@@ -51,7 +51,7 @@ def generate(
     extra_instructions: tuple[str, ...],
     body_only: bool,
 ) -> None:
-    """Generate an abstract from slides PDF.
+    """Generate an abstract from presentation materials.
 
     CONFIG_FILE defaults to doc-to-abstract.yaml in the current directory.
     """

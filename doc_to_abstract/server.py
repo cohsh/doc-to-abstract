@@ -47,10 +47,10 @@ def _run(
 ) -> tuple[str, str | None]:
     """Generate abstract and return (abstract_text, output_file_path)."""
     if not slides_files:
-        raise gr.Error("At least one Slides PDF is required.")
+        raise gr.Error("At least one main material file is required.")
     slides = [f for f in slides_files if f]
     if not slides:
-        raise gr.Error("At least one Slides PDF is required.")
+        raise gr.Error("At least one main material file is required.")
     if not title.strip():
         raise gr.Error("Title is required.")
     if not authors_text.strip():
@@ -149,20 +149,20 @@ def create_app() -> gr.Blocks:
                     # Tab 1: Materials
                     with gr.Tab("1. Materials"):
                         slides_input = gr.File(
-                            label="Slides PDF(s) (required)",
-                            file_types=[".pdf"],
+                            label="Main materials (required, e.g., slides, manuscripts)",
+                            file_types=[".pdf", ".pptx"],
                             file_count="multiple",
                             type="filepath",
                         )
                         reference_input = gr.File(
                             label="Reference papers (optional)",
-                            file_types=[".pdf"],
+                            file_types=[".pdf", ".pptx"],
                             file_count="multiple",
                             type="filepath",
                         )
                         supplementary_input = gr.File(
                             label="Supplementary materials (optional, e.g., call for papers)",
-                            file_types=[".pdf"],
+                            file_types=[".pdf", ".pptx"],
                             file_count="multiple",
                             type="filepath",
                         )
