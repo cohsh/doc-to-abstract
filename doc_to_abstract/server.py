@@ -81,13 +81,29 @@ def _save_config(
     extra_instructions: str,
     body_only: bool,
 ) -> str | None:
-    """Save current UI state to doc-to-abstract.yaml, copying files to materials/."""
+    """Save current UI state to doc-to-abstract.yaml, copying files to materials/.
+
+    Existing YAML is used as the base so that fields not present in the UI
+    (e.g. author emails, max_characters, generated_abstract) are preserved.
+    """
+    # Load existing YAML as base to preserve fields the UI doesn't manage
     data: dict = {}
+    if CONFIG_FILE.exists():
+        try:
+            with open(CONFIG_FILE, encoding="utf-8") as f:
+                data = yaml.safe_load(f) or {}
+        except Exception:
+            data = {}
 
     # Title
     data["title"] = title.strip()
 
-    # Authors
+    # Authors — merge with existing to preserve emails
+    existing_authors: dict[str, dict] = {}
+    for a in data.get("authors", []):
+        if isinstance(a, dict) and a.get("name"):
+            existing_authors[a["name"]] = a
+
     authors = []
     for line in (authors_text or "").strip().splitlines():
         line = line.strip()
@@ -95,7 +111,12 @@ def _save_config(
             continue
         parts = [p.strip() for p in line.split(",", 1)]
         if len(parts) >= 2:
-            authors.append({"name": parts[0], "affiliation": parts[1]})
+            entry = {"name": parts[0], "affiliation": parts[1]}
+            # Preserve email from existing YAML if available
+            prev = existing_authors.get(parts[0], {})
+            if prev.get("email"):
+                entry["email"] = prev["email"]
+            authors.append(entry)
     data["authors"] = authors
 
     # Copy files and record paths
@@ -109,32 +130,33 @@ def _save_config(
     for f in (references_files or []):
         if f:
             refs.append(_copy_to_materials(f, "references"))
-    if refs:
-        data["references"] = refs
+    data["references"] = refs if refs else []
 
     supps = []
     for f in (supplementary_files or []):
         if f:
             supps.append(_copy_to_materials(f, "supplementary"))
-    if supps:
-        data["supplementary"] = supps
+    data["supplementary"] = supps if supps else []
 
     if template_file:
         data["template"] = _copy_to_materials(template_file, "templates")
+    else:
+        data.pop("template", None)
 
     # Settings
     data["language"] = language
     data["tone"] = tone
     if max_words and max_words > 0:
         data["max_words"] = int(max_words)
+    else:
+        data.pop("max_words", None)
     data["output"] = "abstract.tex"
 
     # Extra instructions
     extra_list = [
         line.strip() for line in (extra_instructions or "").splitlines() if line.strip()
     ]
-    if extra_list:
-        data["extra_instructions"] = extra_list
+    data["extra_instructions"] = extra_list if extra_list else []
 
     # Annotations
     ann_dict: dict = {}
@@ -152,8 +174,11 @@ def _save_config(
                     ann_entry["comment"] = comment
                 if ann_entry:
                     ann_dict[filename] = ann_entry
-    if ann_dict:
-        data["annotations"] = ann_dict
+    data["annotations"] = ann_dict if ann_dict else {}
+
+    # Remove legacy keys
+    data.pop("slides", None)
+    data.pop("slides_pdf", None)
 
     CONFIG_FILE.write_text(yaml.dump(data, allow_unicode=True, sort_keys=False), encoding="utf-8")
     return str(CONFIG_FILE)
@@ -237,6 +262,9 @@ def _load_config(config_file: str | None):
     # body_only is not stored in YAML, default to False
     body_only = False
 
+    # Generated abstract
+    generated_abstract = data.get("generated_abstract", "")
+
     return (
         materials_files or None,
         ref_files or None,
@@ -250,6 +278,7 @@ def _load_config(config_file: str | None):
         ann_rows,
         extra_text,
         body_only,
+        generated_abstract,
     )
 
 
@@ -344,23 +373,119 @@ def _run(
     prompt = build_prompt(config)
     abstract_text = generate_abstract(prompt)
 
+    _save_abstract_to_yaml(abstract_text)
+
     # Generate output file
-    if config.template and Path(config.template).suffix.lower() in (".tex", ".docx"):
-        suffix = Path(config.template).suffix.lower()
+    output_file = _generate_output_file(
+        abstract_text, template_file, title, authors_text, body_only
+    )
+    return abstract_text, output_file
+
+
+def _generate_output_file(
+    abstract_text: str,
+    template_file: str | None,
+    title: str,
+    authors_text: str,
+    body_only: bool,
+) -> str | None:
+    """Generate an output file (.tex or .docx) from abstract text and return the path."""
+    if not abstract_text or not abstract_text.strip():
+        return None
+
+    # Parse authors for LaTeX rendering
+    authors = []
+    for line in (authors_text or "").strip().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        parts = [p.strip() for p in line.split(",", 1)]
+        if len(parts) >= 2:
+            authors.append(Author(name=parts[0], affiliation=parts[1]))
+
+    if template_file and Path(template_file).suffix.lower() in (".tex", ".docx"):
+        suffix = Path(template_file).suffix.lower()
         out = tempfile.NamedTemporaryFile(
             suffix=suffix, prefix="abstract_", delete=False
         )
         out.close()
-        fill_template(config.template, abstract_text, out.name)
-        return abstract_text, out.name
+        fill_template(template_file, abstract_text, out.name)
+        return out.name
     else:
+        config = Config(
+            title=title.strip() if title else "",
+            authors=authors,
+            materials=["dummy"],  # not used by render_latex
+        )
         latex_output = render_latex(abstract_text, config, body_only=body_only)
         out = tempfile.NamedTemporaryFile(
             suffix=".tex", prefix="abstract_", delete=False
         )
         out.close()
         Path(out.name).write_text(latex_output, encoding="utf-8")
-        return abstract_text, out.name
+        return out.name
+
+
+def _save_abstract_to_yaml(abstract_text: str) -> None:
+    """Save abstract text to the YAML config file."""
+    if CONFIG_FILE.exists():
+        try:
+            with open(CONFIG_FILE, encoding="utf-8") as f:
+                data = yaml.safe_load(f) or {}
+            data["generated_abstract"] = abstract_text
+            CONFIG_FILE.write_text(
+                yaml.dump(data, allow_unicode=True, sort_keys=False),
+                encoding="utf-8",
+            )
+        except Exception:
+            pass
+
+
+def _revise(
+    current_abstract: str,
+    revision_instructions: str,
+    language: str,
+    tone: str,
+    max_words: int,
+    template_file: str | None,
+    title: str,
+    authors_text: str,
+    body_only: bool,
+) -> tuple[str, str | None]:
+    """Revise the current abstract based on revision instructions."""
+    if not current_abstract.strip():
+        raise gr.Error("No abstract to revise. Generate one first.")
+    if not revision_instructions.strip():
+        raise gr.Error("Please enter revision instructions.")
+
+    length_constraint = ""
+    if max_words and max_words > 0:
+        length_constraint = f"- The abstract MUST NOT exceed {max_words} words.\n"
+
+    prompt = (
+        "You are an expert academic writer. "
+        "Revise the following abstract according to the instructions below.\n\n"
+        f"## Requirements\n"
+        f"- Language: {language}\n"
+        f"- Tone: {tone}\n"
+        f"{length_constraint}\n"
+        f"## Current Abstract\n{current_abstract}\n\n"
+        f"## Revision Instructions\n{revision_instructions}\n\n"
+        "## Output Rules\n"
+        "- Output ONLY the revised abstract body text.\n"
+        "- Mathematical expressions should use LaTeX notation (e.g., $E = mc^2$).\n"
+        "- Do NOT include \\begin{abstract}, \\end{abstract}, or any LaTeX structural commands.\n"
+        "- Do NOT include any commentary, explanation, or meta-text.\n"
+    )
+
+    revised_text = generate_abstract(prompt)
+
+    _save_abstract_to_yaml(revised_text)
+
+    output_file = _generate_output_file(
+        revised_text, template_file, title, authors_text, body_only
+    )
+    return revised_text, output_file
 
 
 def _load_initial_config() -> dict:
@@ -378,6 +503,8 @@ def _load_initial_config() -> dict:
         "annotations": [],
         "extra_instructions": "",
         "body_only": False,
+        "generated_abstract": "",
+        "output_file": None,
     }
     if not CONFIG_FILE.exists():
         return defaults
@@ -387,11 +514,26 @@ def _load_initial_config() -> dict:
             "materials", "references", "supplementary", "template",
             "title", "authors", "language", "tone", "max_words",
             "annotations", "extra_instructions", "body_only",
+            "generated_abstract",
         ]
         for i, key in enumerate(keys):
             defaults[key] = result[i]
     except Exception:
         pass
+
+    # Generate output file from saved abstract on startup
+    if defaults["generated_abstract"]:
+        try:
+            defaults["output_file"] = _generate_output_file(
+                defaults["generated_abstract"],
+                defaults["template"],
+                defaults["title"],
+                defaults["authors"],
+                defaults["body_only"],
+            )
+        except Exception:
+            pass
+
     return defaults
 
 
@@ -507,10 +649,22 @@ def create_app() -> gr.Blocks:
 
             with gr.Column(scale=1):
                 abstract_output = gr.Textbox(
-                    label="Generated Abstract",
+                    label="Generated Abstract (editable)",
                     lines=12,
+                    value=init["generated_abstract"],
+                    interactive=True,
                 )
-                file_output = gr.File(label="Download output file")
+                file_output = gr.File(
+                    label="Download output file",
+                    value=init["output_file"],
+                )
+                gr.Markdown("---")
+                revision_input = gr.Textbox(
+                    label="Revision instructions",
+                    placeholder="e.g.\nMake it shorter.\nEmphasize the numerical results in the third sentence.\nFix: CatBoostRegreesor → CatBoostRegressor",
+                    lines=5,
+                )
+                revise_btn = gr.Button("Revise Abstract", variant="secondary")
 
         # Refresh annotation table from uploaded files (preserving edits)
         refresh_btn.click(
@@ -577,7 +731,26 @@ def create_app() -> gr.Blocks:
                 annotation_table,
                 extra_input,
                 body_only_input,
+                abstract_output,
             ],
+        )
+
+        # Revise abstract
+        revise_btn.click(
+            fn=_revise,
+            inputs=[
+                abstract_output, revision_input, language_input, tone_input,
+                max_words_input, template_input, title_input, authors_input,
+                body_only_input,
+            ],
+            outputs=[abstract_output, file_output],
+        )
+
+        # Auto-save abstract when edited
+        abstract_output.change(
+            fn=_save_abstract_to_yaml,
+            inputs=[abstract_output],
+            outputs=[],
         )
 
     return app
