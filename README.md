@@ -60,7 +60,11 @@ uv sync
 uv run doc-to-abstract serve
 ```
 
-Open http://localhost:7860 in your browser. Upload your slides PDF(s), fill in the fields, and click "Generate Abstract".
+Open http://localhost:7860 in your browser. The UI has 3 tabs:
+
+1. **Materials** - Upload slides, references, supplementary materials, and templates
+2. **Paper Info** - Enter title, authors, language, tone, and word limit
+3. **Annotations & Generate** - Set importance/comments per file, add extra instructions, and generate
 
 ### CLI
 
@@ -116,6 +120,7 @@ All settings are defined in `doc-to-abstract.yaml`.
 | `template` | `""` | Conference/workshop template file (`.tex`, `.docx`, or `.pdf`). Used to understand format requirements. For `.tex`/`.docx`, the abstract is also inserted into a copy |
 | `output` | `"abstract.tex"` | Output file path |
 | `extra_instructions` | `[]` | List of additional instructions for the LLM. A single string is also accepted |
+| `annotations` | `{}` | Per-file importance (`high`/`medium`/`low`) and comments, keyed by filename |
 
 ### Example
 
@@ -148,6 +153,14 @@ output: "abstract.tex"
 extra_instructions:
   - "Focus on the numerical results."
   - "Emphasize the novelty of the proposed method."
+
+annotations:
+  "presentation.pdf":
+    importance: "high"
+    comment: "Focus on slides 5-8"
+  "refs/related-work.pdf":
+    importance: "low"
+    comment: "Background context only"
 ```
 
 ## CLI Reference

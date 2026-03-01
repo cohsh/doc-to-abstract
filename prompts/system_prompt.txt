@@ -28,13 +28,16 @@ You are an expert academic writer. Your task is to generate an abstract for an a
    - Align the abstract with the expected topics and emphasis
    - Adopt appropriate framing for the target audience
 
-4. Write a cohesive, self-contained abstract that:
+4. Some materials may have importance annotations ([Importance: high/low]) and notes ([Note: ...]).
+   Weight your analysis accordingly — prioritize high-importance materials and follow any specific notes.
+
+5. Write a cohesive, self-contained abstract that:
    - Opens with the problem context or motivation (1-2 sentences)
    - Describes the approach or method (1-3 sentences)
    - Summarizes the key results or findings (1-3 sentences)
    - Ends with the significance or implications (1 sentence)
 
-5. Style guidelines:
+6. Style guidelines:
    - Use {tone} academic tone
    - Write in {language}
    - Do NOT include citations, references, or figure numbers
@@ -42,7 +45,7 @@ You are an expert academic writer. Your task is to generate an abstract for an a
    - Use precise, domain-specific terminology from the slides
    - Avoid vague or generic filler phrases
 
-6. The output must be valid for direct inclusion in a LaTeX abstract environment.
+7. The output must be valid for direct inclusion in a LaTeX abstract environment.
    - Mathematical expressions should use LaTeX notation (e.g., $E = mc^2$)
    - Do NOT include \begin{{abstract}}, \end{{abstract}}, or any other LaTeX structural commands
    - Output ONLY the abstract body text as paragraphs

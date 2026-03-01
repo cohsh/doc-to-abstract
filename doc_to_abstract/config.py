@@ -18,6 +18,12 @@ class Author:
 
 
 @dataclass
+class FileAnnotation:
+    importance: str = "medium"  # high / medium / low
+    comment: str = ""
+
+
+@dataclass
 class Config:
     title: str
     authors: list[Author]
@@ -31,6 +37,7 @@ class Config:
     template: str = ""
     output: str = "abstract.tex"
     extra_instructions: list[str] = field(default_factory=list)
+    annotations: dict[str, FileAnnotation] = field(default_factory=dict)
 
 
 def load_config(config_path: str, overrides: dict | None = None) -> Config:
@@ -139,6 +146,20 @@ def load_config(config_path: str, overrides: dict | None = None) -> Config:
     else:
         extra_instructions = []
 
+    # Parse annotations
+    annotations: dict[str, FileAnnotation] = {}
+    raw_annotations = data.get("annotations", {}) or {}
+    if isinstance(raw_annotations, dict):
+        for filepath, ann_data in raw_annotations.items():
+            if isinstance(ann_data, dict):
+                importance = str(ann_data.get("importance", "medium")).lower()
+                if importance not in ("high", "medium", "low"):
+                    importance = "medium"
+                annotations[filepath] = FileAnnotation(
+                    importance=importance,
+                    comment=str(ann_data.get("comment", "")),
+                )
+
     return Config(
         title=data["title"],
         authors=authors,
@@ -152,4 +173,5 @@ def load_config(config_path: str, overrides: dict | None = None) -> Config:
         template=template,
         output=data.get("output", "abstract.tex"),
         extra_instructions=extra_instructions,
+        annotations=annotations,
     )

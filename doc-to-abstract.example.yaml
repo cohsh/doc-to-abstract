@@ -52,3 +52,12 @@ output: "abstract.tex"
 #   - "Focus on the numerical results in slides 5-8."
 #   - "Emphasize the novelty of the proposed method."
 # A single string is also supported: extra_instructions: "Focus on results."
+
+# Optional: Per-file annotations (importance and comments)
+# annotations:
+#   "slides.pdf":
+#     importance: "high"
+#     comment: "Focus on the results in slides 5-8"
+#   "refs/paper1.pdf":
+#     importance: "low"
+#     comment: "Background context only"

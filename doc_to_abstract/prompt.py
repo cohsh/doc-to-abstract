@@ -8,7 +8,22 @@ from doc_to_abstract.config import Config
 from doc_to_abstract.exceptions import PDFError
 from doc_to_abstract.template import read_template
 
+from doc_to_abstract.config import FileAnnotation
+
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
+
+
+def _format_annotation(annotations: dict[str, FileAnnotation], filepath: str) -> str:
+    """Format annotation metadata for a file, if any."""
+    ann = annotations.get(filepath) or annotations.get(Path(filepath).name)
+    if not ann:
+        return ""
+    parts = []
+    if ann.importance != "medium":
+        parts.append(f"[Importance: {ann.importance}]")
+    if ann.comment:
+        parts.append(f"[Note: {ann.comment}]")
+    return " ".join(parts)
 
 
 def extract_text_from_pdf(pdf_path: str, page_label: str = "Slide") -> str:
@@ -68,20 +83,32 @@ def build_prompt(config: Config) -> str:
     # Append extracted slide text
     for i, slide_path in enumerate(config.slides, 1):
         slides_text = extract_text_from_pdf(slide_path, page_label="Slide")
+        ann_text = _format_annotation(config.annotations, slide_path)
         if len(config.slides) > 1:
-            prompt += f"\n\n## Presentation Slides (Deck #{i}: {Path(slide_path).name})\n{slides_text}\n"
+            header = f"\n\n## Presentation Slides (Deck #{i}: {Path(slide_path).name})"
         else:
-            prompt += f"\n\n## Presentation Slides Content\n{slides_text}\n"
+            header = "\n\n## Presentation Slides Content"
+        if ann_text:
+            header += f"\n{ann_text}"
+        prompt += f"{header}\n{slides_text}\n"
 
     # Append reference papers
     for i, ref_path in enumerate(config.references, 1):
         ref_text = extract_text_from_pdf(ref_path)
-        prompt += f"\n## Reference Paper #{i}\n{ref_text}\n"
+        ann_text = _format_annotation(config.annotations, ref_path)
+        header = f"\n## Reference Paper #{i} ({Path(ref_path).name})"
+        if ann_text:
+            header += f"\n{ann_text}"
+        prompt += f"{header}\n{ref_text}\n"
 
     # Append supplementary materials
     for i, sup_path in enumerate(config.supplementary, 1):
         sup_text = extract_text_from_pdf(sup_path, page_label="Page")
-        prompt += f"\n## Supplementary Material #{i} ({Path(sup_path).name})\n{sup_text}\n"
+        ann_text = _format_annotation(config.annotations, sup_path)
+        header = f"\n## Supplementary Material #{i} ({Path(sup_path).name})"
+        if ann_text:
+            header += f"\n{ann_text}"
+        prompt += f"{header}\n{sup_text}\n"
 
     # Append template content
     if config.template:
