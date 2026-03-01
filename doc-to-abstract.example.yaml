@@ -1,0 +1,38 @@
+# doc-to-abstract configuration
+# Copy this file to doc-to-abstract.yaml and edit it.
+
+# Required: Title of your presentation/paper
+title: "My Research Title"
+
+# Required: Author list with affiliations
+authors:
+  - name: "First Author"
+    affiliation: "Department of Physics, University of Tokyo"
+    email: "first@example.com"
+  - name: "Second Author"
+    affiliation: "Institute for Advanced Study"
+
+# Required: Path to your presentation slides PDF
+slides_pdf: "slides.pdf"
+
+# Optional: Language for the abstract (default: English)
+language: "English"
+
+# Optional: Writing tone (default: formal)
+# Options: formal, semi-formal, casual
+tone: "formal"
+
+# Optional: Length constraints (specify one or neither)
+max_words: 300
+# max_characters: 1500
+
+# Optional: Reference papers for context and style
+# references:
+#   - "refs/paper1.pdf"
+#   - "refs/paper2.pdf"
+
+# Optional: Output file path (default: abstract.tex)
+output: "abstract.tex"
+
+# Optional: Additional instructions for the LLM
+# extra_instructions: "Focus on the numerical results in slides 5-8."

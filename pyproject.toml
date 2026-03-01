@@ -1,0 +1,26 @@
+[project]
+name = "doc-to-abstract"
+version = "0.1.0"
+description = "Generate academic abstracts from presentation slide PDFs using Claude"
+requires-python = ">=3.11"
+dependencies = [
+    "click>=8.1.0",
+    "pymupdf>=1.25.0",
+    "rich>=13.0.0",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+doc-to-abstract = "doc_to_abstract.main:cli"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["doc_to_abstract*"]
+
+[build-system]
+requires = ["setuptools>=75.0"]
+build-backend = "setuptools.build_meta"
