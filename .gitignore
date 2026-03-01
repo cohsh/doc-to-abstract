@@ -6,3 +6,7 @@ dist/
 .env
 *.tex
 .DS_Store
+
+# User data (remove these lines if you want to track your own config/materials)
+doc-to-abstract.yaml
+materials/
