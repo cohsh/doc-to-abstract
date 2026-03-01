@@ -1,8 +1,18 @@
-# doc-to-abstract
+<p align="center">
+  <img src="docs/images/logo.svg" alt="doc-to-abstract" width="120">
+</p>
 
-Generate academic abstracts from your research materials using Claude Code.
+<h1 align="center">doc-to-abstract</h1>
+
+<p align="center">Generate academic abstracts from your research materials using Claude Code.</p>
 
 A CLI + Web UI tool for researchers to quickly generate conference/workshop/research meeting abstracts from various materials (manuscripts, slides, notes, etc.).
+
+## Screenshots
+
+| Materials | Paper Info | Generate & Revise |
+|:-:|:-:|:-:|
+| ![Materials](docs/images/tab-materials.png) | ![Paper Info](docs/images/tab-paper-info.png) | ![Generate](docs/images/tab-generate.png) |
 
 ## How It Works
 

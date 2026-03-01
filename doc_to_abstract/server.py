@@ -542,7 +542,21 @@ def create_app() -> gr.Blocks:
     init = _load_initial_config()
 
     with gr.Blocks(title="doc-to-abstract") as app:
-        gr.Markdown("# doc-to-abstract\nGenerate academic abstracts from your research materials using Claude Code.")
+        gr.HTML(
+            '<div style="display: flex; align-items: center; gap: 12px; padding: 8px 0;">'
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 48" width="48" height="32">'
+            '<path d="M4 24 L28 24 L22 18 M28 24 L22 30" fill="none" stroke="#ccc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'
+            '<rect x="38" y="6" width="28" height="36" rx="3" fill="none" stroke="#ccc" stroke-width="2"/>'
+            '<line x1="44" y1="16" x2="60" y2="16" stroke="#ccc" stroke-width="1.5" stroke-linecap="round"/>'
+            '<line x1="44" y1="22" x2="58" y2="22" stroke="#ccc" stroke-width="1.5" stroke-linecap="round"/>'
+            '<line x1="44" y1="28" x2="56" y2="28" stroke="#ccc" stroke-width="1.5" stroke-linecap="round"/>'
+            '</svg>'
+            '<div>'
+            '<div style="font-size: 1.4em; font-weight: bold; color: #eee;">doc-to-abstract</div>'
+            '<div style="font-size: 0.85em; color: #aaa;">Generate academic abstracts from your research materials using Claude Code.</div>'
+            '</div>'
+            '</div>'
+        )
 
         with gr.Row():
             with gr.Column(scale=1):
@@ -661,7 +675,7 @@ def create_app() -> gr.Blocks:
                 gr.Markdown("---")
                 revision_input = gr.Textbox(
                     label="Revision instructions",
-                    placeholder="e.g.\nMake it shorter.\nEmphasize the numerical results in the third sentence.\nFix: CatBoostRegreesor → CatBoostRegressor",
+                    placeholder="e.g.\nMake it shorter.\nEmphasize the results.\nUse more formal language.",
                     lines=5,
                 )
                 revise_btn = gr.Button("Revise Abstract", variant="secondary")
