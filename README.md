@@ -281,6 +281,10 @@ By default, the tool generates a complete LaTeX document:
 
 With `--body-only`, only the abstract block is output for pasting into your existing document.
 
+## Built with
+
+This project was built using [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with Claude Opus 4.6.
+
 ## License
 
 MIT
