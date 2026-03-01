@@ -6,11 +6,11 @@ title: "My Research Title"
 
 # Required: Author list with affiliations
 authors:
-  - name: "First Author"
-    affiliation: "Department of Physics, University of Tokyo"
-    email: "first@example.com"
-  - name: "Second Author"
-    affiliation: "Institute for Advanced Study"
+  - name: "Alice Example"
+    affiliation: "Department of Physics, Example University"
+    email: "alice@example.com"
+  - name: "Bob Sample"
+    affiliation: "Example Institute"
 
 # Required: Path to your presentation slides PDF
 slides_pdf: "slides.pdf"

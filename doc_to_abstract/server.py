@@ -102,7 +102,7 @@ def create_app() -> gr.Blocks:
                 )
                 authors_input = gr.Textbox(
                     label="Authors (one per line: Name, Affiliation)",
-                    placeholder="Taro Yamada, University of Tokyo\nHanako Suzuki, RIKEN",
+                    placeholder="Alice Example, Example University\nBob Sample, Example Institute",
                     lines=3,
                 )
 

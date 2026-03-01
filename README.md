@@ -75,8 +75,8 @@ uv run doc-to-abstract init
 ```yaml
 title: "My Research Title"
 authors:
-  - name: "First Author"
-    affiliation: "University of Tokyo"
+  - name: "Alice Example"
+    affiliation: "Example University"
 slides_pdf: "slides.pdf"
 language: "English"
 max_words: 300
@@ -121,11 +121,11 @@ All settings are defined in `doc-to-abstract.yaml`.
 title: "Novel Error Correction Methods in Quantum Computing"
 
 authors:
-  - name: "Taro Yamada"
-    affiliation: "Department of Physics, University of Tokyo"
-    email: "yamada@example.com"
-  - name: "Hanako Suzuki"
-    affiliation: "RIKEN"
+  - name: "Alice Example"
+    affiliation: "Department of Physics, Example University"
+    email: "alice@example.com"
+  - name: "Bob Sample"
+    affiliation: "Example Institute"
 
 slides_pdf: "presentation.pdf"
 
@@ -193,11 +193,11 @@ By default, the tool generates a complete LaTeX document:
 
 \title{My Research Title}
 \author{
-  First Author \\
-  Department of Physics, University of Tokyo
+  Alice Example \\
+  Department of Physics, Example University
 \and
-  Second Author \\
-  Institute for Advanced Study
+  Bob Sample \\
+  Example Institute
 }
 \date{}
 
