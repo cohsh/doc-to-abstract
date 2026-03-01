@@ -92,8 +92,8 @@ title: "My Research Title"
 authors:
   - name: "Alice Example"
     affiliation: "Example University"
-slides:
-  - "slides.pdf"
+materials:
+  - "manuscript.pdf"
 language: "English"
 ```
 
@@ -115,7 +115,7 @@ All settings are defined in `doc-to-abstract.yaml`.
 |-------|-------------|
 | `title` | Title of your paper |
 | `authors` | List of authors, each with `name` and `affiliation` (and optional `email`) |
-| `slides` | Path(s) to main materials (.pdf / .pptx). Can be a single string or a list. Legacy `slides_pdf` is also supported |
+| `materials` | Path(s) to main materials (.pdf / .pptx). Can be a single string or a list. Legacy `slides` and `slides_pdf` are also supported |
 
 ### Optional Fields
 
@@ -144,7 +144,7 @@ authors:
   - name: "Bob Sample"
     affiliation: "Example Institute"
 
-slides:
+materials:
   - "presentation.pdf"
 
 language: "English"
@@ -167,7 +167,7 @@ extra_instructions:
 annotations:
   "presentation.pdf":
     importance: "high"
-    comment: "Focus on slides 5-8"
+    comment: "Focus on the results section"
   "refs/related-work.pdf":
     importance: "low"
     comment: "Background context only"
@@ -189,7 +189,7 @@ uv run doc-to-abstract generate my-config.yaml
 uv run doc-to-abstract generate --language Japanese --max-words 200
 
 # Multiple main materials (.pdf or .pptx)
-uv run doc-to-abstract generate --slides deck1.pdf --slides deck2.pptx
+uv run doc-to-abstract generate --materials doc1.pdf --materials doc2.pptx
 
 # Add supplementary materials (e.g., call for papers)
 uv run doc-to-abstract generate --supplementary cfp.pdf
@@ -216,7 +216,7 @@ uv run doc-to-abstract --version
 | Option | Description |
 |--------|-------------|
 | `CONFIG_FILE` | Path to YAML config (default: `doc-to-abstract.yaml`) |
-| `--slides PATH` | Main material path(s) (.pdf / .pptx); can be repeated |
+| `--materials PATH` | Main material path(s) (.pdf / .pptx); can be repeated |
 | `--supplementary PATH` | Supplementary material(s) (.pdf / .pptx); can be repeated |
 | `--template PATH` | Conference/workshop template file (`.tex`, `.docx`, or `.pdf`) |
 | `--output, -o PATH` | Override output file path |

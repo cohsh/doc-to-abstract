@@ -18,7 +18,7 @@ CONFIG_FILE = Path("doc-to-abstract.yaml")
 
 
 def _merge_annotations(
-    slides: list[str] | None,
+    materials: list[str] | None,
     references: list[str] | None,
     supplementary: list[str] | None,
     current_table,
@@ -26,9 +26,9 @@ def _merge_annotations(
     """Merge uploaded files with existing annotation table, preserving edits."""
     # Build desired file list
     desired: list[tuple[str, str]] = []  # (filename, category)
-    for f in (slides or []):
+    for f in (materials or []):
         if f:
-            desired.append((Path(f).name, "slides"))
+            desired.append((Path(f).name, "materials"))
     for f in (references or []):
         if f:
             desired.append((Path(f).name, "references"))
@@ -68,7 +68,7 @@ def _copy_to_materials(src_path: str, category: str) -> str:
 
 
 def _save_config(
-    slides_files: list[str] | None,
+    materials_files: list[str] | None,
     references_files: list[str] | None,
     supplementary_files: list[str] | None,
     template_file: str | None,
@@ -99,11 +99,11 @@ def _save_config(
     data["authors"] = authors
 
     # Copy files and record paths
-    slides = []
-    for f in (slides_files or []):
+    mats = []
+    for f in (materials_files or []):
         if f:
-            slides.append(_copy_to_materials(f, "slides"))
-    data["slides"] = slides
+            mats.append(_copy_to_materials(f, "main"))
+    data["materials"] = mats
 
     refs = []
     for f in (references_files or []):
@@ -198,11 +198,11 @@ def _load_config(config_file: str | None):
     else:
         extra_text = ""
 
-    # Slides files
-    raw_slides = data.get("slides") or data.get("slides_pdf") or []
-    if isinstance(raw_slides, str):
-        raw_slides = [raw_slides]
-    slides_files = [s for s in raw_slides if Path(s).exists()]
+    # Materials files (backward compatible: accept slides or slides_pdf)
+    raw_materials = data.get("materials") or data.get("slides") or data.get("slides_pdf") or []
+    if isinstance(raw_materials, str):
+        raw_materials = [raw_materials]
+    materials_files = [s for s in raw_materials if Path(s).exists()]
 
     # References
     raw_refs = data.get("references", []) or []
@@ -221,8 +221,8 @@ def _load_config(config_file: str | None):
     raw_annotations = data.get("annotations", {}) or {}
     # Also build rows from file lists for files without annotations
     all_files: list[tuple[str, str]] = []
-    for s in raw_slides:
-        all_files.append((Path(s).name, "slides"))
+    for s in raw_materials:
+        all_files.append((Path(s).name, "materials"))
     for r in raw_refs:
         all_files.append((Path(r).name, "references"))
     for s in raw_supps:
@@ -238,7 +238,7 @@ def _load_config(config_file: str | None):
     body_only = False
 
     return (
-        slides_files or None,
+        materials_files or None,
         ref_files or None,
         supp_files or None,
         template_file,
@@ -254,7 +254,7 @@ def _load_config(config_file: str | None):
 
 
 def _run(
-    slides_files: list[str] | None,
+    materials_files: list[str] | None,
     references_files: list[str] | None,
     supplementary_files: list[str] | None,
     template_file: str | None,
@@ -268,10 +268,10 @@ def _run(
     body_only: bool,
 ) -> tuple[str, str | None]:
     """Generate abstract and return (abstract_text, output_file_path)."""
-    if not slides_files:
+    if not materials_files:
         raise gr.Error("At least one main material file is required.")
-    slides = [f for f in slides_files if f]
-    if not slides:
+    mats = [f for f in materials_files if f]
+    if not mats:
         raise gr.Error("At least one main material file is required.")
     if not title.strip():
         raise gr.Error("Title is required.")
@@ -308,7 +308,7 @@ def _run(
         if rows:
             # Build a map from filename to full path
             name_to_path: dict[str, str] = {}
-            for f in slides:
+            for f in mats:
                 name_to_path[Path(f).name] = f
             for f in references:
                 name_to_path[Path(f).name] = f
@@ -330,7 +330,7 @@ def _run(
     config = Config(
         title=title.strip(),
         authors=authors,
-        slides=slides,
+        materials=mats,
         language=language,
         tone=tone,
         max_words=max_words if max_words > 0 else None,
@@ -366,7 +366,7 @@ def _run(
 def _load_initial_config() -> dict:
     """Load config from default YAML if it exists, returning defaults for UI fields."""
     defaults = {
-        "slides": None,
+        "materials": None,
         "references": None,
         "supplementary": None,
         "template": None,
@@ -384,7 +384,7 @@ def _load_initial_config() -> dict:
     try:
         result = _load_config(str(CONFIG_FILE))
         keys = [
-            "slides", "references", "supplementary", "template",
+            "materials", "references", "supplementary", "template",
             "title", "authors", "language", "tone", "max_words",
             "annotations", "extra_instructions", "body_only",
         ]
@@ -407,12 +407,12 @@ def create_app() -> gr.Blocks:
                 with gr.Tabs():
                     # Tab 1: Materials
                     with gr.Tab("1. Materials"):
-                        slides_input = gr.File(
+                        materials_input = gr.File(
                             label="Main materials (required, e.g., slides, manuscripts)",
                             file_types=[".pdf", ".pptx"],
                             file_count="multiple",
                             type="filepath",
-                            value=init["slides"],
+                            value=init["materials"],
                         )
                         reference_input = gr.File(
                             label="Reference papers (optional)",
@@ -515,21 +515,21 @@ def create_app() -> gr.Blocks:
         # Refresh annotation table from uploaded files (preserving edits)
         refresh_btn.click(
             fn=_merge_annotations,
-            inputs=[slides_input, reference_input, supplementary_input, annotation_table],
+            inputs=[materials_input, reference_input, supplementary_input, annotation_table],
             outputs=[annotation_table],
         )
 
         # Auto-refresh when files change (preserving edits)
-        for file_input in [slides_input, reference_input, supplementary_input]:
+        for file_input in [materials_input, reference_input, supplementary_input]:
             file_input.change(
                 fn=_merge_annotations,
-                inputs=[slides_input, reference_input, supplementary_input, annotation_table],
+                inputs=[materials_input, reference_input, supplementary_input, annotation_table],
                 outputs=[annotation_table],
             )
 
         # Generate (auto-save before generating)
         save_inputs = [
-            slides_input,
+            materials_input,
             reference_input,
             supplementary_input,
             template_input,
@@ -565,7 +565,7 @@ def create_app() -> gr.Blocks:
             fn=_load_config,
             inputs=[load_input],
             outputs=[
-                slides_input,
+                materials_input,
                 reference_input,
                 supplementary_input,
                 template_input,

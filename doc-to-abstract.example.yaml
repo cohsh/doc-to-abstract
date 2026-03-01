@@ -1,7 +1,7 @@
 # doc-to-abstract configuration
 # Copy this file to doc-to-abstract.yaml and edit it.
 
-# Required: Title of your presentation/paper
+# Required: Title of your paper
 title: "My Research Title"
 
 # Required: Author list with affiliations
@@ -12,11 +12,11 @@ authors:
   - name: "Bob Sample"
     affiliation: "Example Institute"
 
-# Required: Path(s) to your presentation slides PDF(s)
-slides:
-  - "slides.pdf"
-# For a single file, you can also use: slides: "slides.pdf"
-# Legacy key 'slides_pdf' is also supported for backward compatibility.
+# Required: Path(s) to your main materials (.pdf / .pptx)
+materials:
+  - "manuscript.pdf"
+# For a single file, you can also use: materials: "manuscript.pdf"
+# Legacy keys 'slides' and 'slides_pdf' are also supported.
 
 # Optional: Language for the abstract (default: English)
 language: "English"
@@ -49,15 +49,15 @@ output: "abstract.tex"
 
 # Optional: Additional instructions for the LLM (list of strings)
 # extra_instructions:
-#   - "Focus on the numerical results in slides 5-8."
+#   - "Focus on the numerical results."
 #   - "Emphasize the novelty of the proposed method."
 # A single string is also supported: extra_instructions: "Focus on results."
 
 # Optional: Per-file annotations (importance and comments)
 # annotations:
-#   "slides.pdf":
+#   "manuscript.pdf":
 #     importance: "high"
-#     comment: "Focus on the results in slides 5-8"
+#     comment: "Focus on the results section"
 #   "refs/paper1.pdf":
 #     importance: "low"
 #     comment: "Background context only"

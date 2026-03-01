@@ -28,7 +28,7 @@ def cli() -> None:
 
 @cli.command()
 @click.argument("config_file", type=click.Path(), default="doc-to-abstract.yaml")
-@click.option("--slides", type=click.Path(exists=True), multiple=True, help="Main material path(s) (.pdf/.pptx); can be repeated")
+@click.option("--materials", type=click.Path(exists=True), multiple=True, help="Main material path(s) (.pdf/.pptx); can be repeated")
 @click.option("--supplementary", type=click.Path(exists=True), multiple=True, help="Supplementary material(s) (.pdf/.pptx); can be repeated")
 @click.option("--template", type=click.Path(exists=True), default=None, help="Conference/workshop template file (.tex or .docx)")
 @click.option("--output", "-o", type=str, default=None, help="Override output file path")
@@ -40,7 +40,7 @@ def cli() -> None:
 @click.option("--body-only", is_flag=True, help="Output only the abstract block")
 def generate(
     config_file: str,
-    slides: tuple[str, ...],
+    materials: tuple[str, ...],
     supplementary: tuple[str, ...],
     template: str | None,
     output: str | None,
@@ -51,14 +51,14 @@ def generate(
     extra_instructions: tuple[str, ...],
     body_only: bool,
 ) -> None:
-    """Generate an abstract from presentation materials.
+    """Generate an abstract from your research materials.
 
     CONFIG_FILE defaults to doc-to-abstract.yaml in the current directory.
     """
     try:
         overrides: dict = {}
-        if slides:
-            overrides["slides"] = list(slides)
+        if materials:
+            overrides["materials"] = list(materials)
         if supplementary:
             overrides["supplementary"] = list(supplementary)
         if template:
@@ -81,7 +81,7 @@ def generate(
 
         console.print(f"  Title:    {config.title}")
         console.print(f"  Authors:  {', '.join(a.name for a in config.authors)}")
-        console.print(f"  Slides:   {len(config.slides)} file(s)")
+        console.print(f"  Materials: {len(config.materials)} file(s)")
         console.print(f"  Language: {config.language}")
         console.print(f"  Tone:     {config.tone}")
         if config.max_words:

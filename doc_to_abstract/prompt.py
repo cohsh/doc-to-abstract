@@ -70,7 +70,7 @@ def _extract_pptx(file_path: str, page_label: str) -> str:
     return "\n\n".join(pages)
 
 
-def extract_text(file_path: str, page_label: str = "Slide") -> str:
+def extract_text(file_path: str, page_label: str = "Page") -> str:
     """Extract text from a PDF or PPTX file."""
     suffix = Path(file_path).suffix.lower()
     if suffix == ".pptx":
@@ -112,17 +112,17 @@ def build_prompt(config: Config) -> str:
         extra_text = "\n".join(f"- {inst}" for inst in config.extra_instructions)
         prompt += f"\n\n## Additional Instructions\n{extra_text}\n"
 
-    # Append extracted slide text
-    for i, slide_path in enumerate(config.slides, 1):
-        slides_text = extract_text(slide_path, page_label="Slide")
-        ann_text = _format_annotation(config.annotations, slide_path)
-        if len(config.slides) > 1:
-            header = f"\n\n## Presentation Slides (Deck #{i}: {Path(slide_path).name})"
+    # Append extracted material text
+    for i, mat_path in enumerate(config.materials, 1):
+        mat_text = extract_text(mat_path)
+        ann_text = _format_annotation(config.annotations, mat_path)
+        if len(config.materials) > 1:
+            header = f"\n\n## Main Material #{i} ({Path(mat_path).name})"
         else:
-            header = "\n\n## Presentation Slides Content"
+            header = f"\n\n## Main Material ({Path(mat_path).name})"
         if ann_text:
             header += f"\n{ann_text}"
-        prompt += f"{header}\n{slides_text}\n"
+        prompt += f"{header}\n{mat_text}\n"
 
     # Append reference papers
     for i, ref_path in enumerate(config.references, 1):

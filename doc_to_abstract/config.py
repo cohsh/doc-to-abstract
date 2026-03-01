@@ -27,7 +27,7 @@ class FileAnnotation:
 class Config:
     title: str
     authors: list[Author]
-    slides: list[str]
+    materials: list[str]
     language: str = "English"
     tone: str = "formal"
     max_words: int | None = None
@@ -79,24 +79,24 @@ def load_config(config_path: str, overrides: dict | None = None) -> Config:
             email=author_data.get("email", ""),
         ))
 
-    # Validate slides (backward compatible: accept slides_pdf or slides)
-    raw_slides = data.get("slides")
+    # Validate materials (backward compatible: accept slides or slides_pdf)
+    raw_materials = data.get("materials") or data.get("slides")
     raw_slides_pdf = data.get("slides_pdf")
-    if raw_slides and raw_slides_pdf:
-        raise ConfigError("Use either 'slides' or 'slides_pdf', not both")
+    if raw_materials and raw_slides_pdf:
+        raise ConfigError("Use either 'materials' or 'slides_pdf', not both")
     if raw_slides_pdf is not None:
-        raw_slides = raw_slides_pdf
-    if not raw_slides:
-        raise ConfigError("'slides' is required (at least one file)")
-    if isinstance(raw_slides, str):
-        slides_list = [raw_slides]
-    elif isinstance(raw_slides, list):
-        slides_list = raw_slides
+        raw_materials = raw_slides_pdf
+    if not raw_materials:
+        raise ConfigError("'materials' is required (at least one file)")
+    if isinstance(raw_materials, str):
+        materials_list = [raw_materials]
+    elif isinstance(raw_materials, list):
+        materials_list = raw_materials
     else:
-        raise ConfigError("'slides' must be a string or a list of strings")
-    if not slides_list:
-        raise ConfigError("'slides' must contain at least one file path")
-    for s_path in slides_list:
+        raise ConfigError("'materials' must be a string or a list of strings")
+    if not materials_list:
+        raise ConfigError("'materials' must contain at least one file path")
+    for s_path in materials_list:
         p = Path(s_path)
         if not p.exists():
             raise ConfigError(f"File not found: {s_path}")
@@ -163,7 +163,7 @@ def load_config(config_path: str, overrides: dict | None = None) -> Config:
     return Config(
         title=data["title"],
         authors=authors,
-        slides=[str(Path(s)) for s in slides_list],
+        materials=[str(Path(s)) for s in materials_list],
         language=data.get("language", "English"),
         tone=data.get("tone", "formal"),
         max_words=max_words,
